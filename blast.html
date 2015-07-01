@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>htmlBio BLAST</title>
+    <script src="lib/jquery-2.1.4.min.js"></script>
+    <script>
+	$("#blastForm").submit(function(event){
+	  alert(event);
+	  blast(event);
+	});
+	
+    function blast(event){
+	  alert(event);
+	  url ="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?";
+	  url+="CMD="+theForm.CMD.value
+	  url+="&DATABASE="+theForm.DATABASE.value
+	  url+="&PROGRAM="+theForm.PROGRAM.value
+	  url+="&QUERY="+encodeURIComponent(theForm.QUERY.value)
+	  
+	  //retrieveUrl="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Get&FORMAT_TYPE=Text&RID=$rid";
+	  return false;  // don't let the page change
+	}
+    </script>
+  </head>  
+  <body>
+    <div>
+      <form id="blastForm" onsubmit="return false;" method="get">
+        <input type="hidden" name="CMD" value="Put" />
+        <input type="hidden" name="DATABASE" value="nt" />
+        <p><select name="PROGRAM">
+          <option selected>blastn</option>
+          <option>blastx</option>
+        </select></p>
+        <p><textarea name="QUERY"></textarea></p>
+        <p><input type="submit" /></p>
+      </form>
+    </div>
+  </body>
+ 
+</html>
