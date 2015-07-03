@@ -2,30 +2,46 @@
   <head>
     <title>htmlBio BLAST</title>
     <script src="lib/jquery-2.1.4.min.js"></script>
+    <script src="lib/NtSeq/lib/nt.js"></script>
     <script>
-	$("#blastForm").submit(function(event){
-	  alert(event);
-	  blast(event);
-	});
 	
+	$(document).ready(function(){
+      $("#blastForm").submit(function(event){
+	    blast(event);
+	    event.preventDefault();
+	  });
+	});
+	/*
     function blast(event){
-	  alert(event);
-	  url ="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?";
+	  var url ="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?";
+	  
+	  var theForm=event.currentTarget;
 	  url+="CMD="+theForm.CMD.value
+	  url+="&FORMAT_TYPE="+theForm.FORMAT.value
 	  url+="&DATABASE="+theForm.DATABASE.value
 	  url+="&PROGRAM="+theForm.PROGRAM.value
 	  url+="&QUERY="+encodeURIComponent(theForm.QUERY.value)
+	  //alert(url);return false;
+	  
+	  // can't view the return on this request since it is html but maybe I can retrieve results later...?
+	  $.ajax({
+	    url: url,
+	    contentType: 'text/plain',
+	    dataType:'jsonp'
+	  });
 	  
 	  //retrieveUrl="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Get&FORMAT_TYPE=Text&RID=$rid";
 	  return false;  // don't let the page change
 	}
+	*/
     </script>
   </head>  
   <body>
     <div>
-      <form id="blastForm" onsubmit="return false;" method="get">
+      <form id="blastForm">
         <input type="hidden" name="CMD" value="Put" />
         <input type="hidden" name="DATABASE" value="nt" />
+        <input type="hidden" name="FORMAT" value="ASN.1" />
         <p><select name="PROGRAM">
           <option selected>blastn</option>
           <option>blastx</option>
