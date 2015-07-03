@@ -7,33 +7,21 @@
 	
 	$(document).ready(function(){
       $("#blastForm").submit(function(event){
-	    blast(event);
+	    blast2seq(event);
 	    event.preventDefault();
 	  });
 	});
-	/*
-    function blast(event){
+    function blast2seq(event){
 	  var url ="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?";
 	  
 	  var theForm=event.currentTarget;
-	  url+="CMD="+theForm.CMD.value
-	  url+="&FORMAT_TYPE="+theForm.FORMAT.value
-	  url+="&DATABASE="+theForm.DATABASE.value
-	  url+="&PROGRAM="+theForm.PROGRAM.value
-	  url+="&QUERY="+encodeURIComponent(theForm.QUERY.value)
-	  //alert(url);return false;
 	  
-	  // can't view the return on this request since it is html but maybe I can retrieve results later...?
-	  $.ajax({
-	    url: url,
-	    contentType: 'text/plain',
-	    dataType:'jsonp'
-	  });
+	  var query=(new Nt.Seq()).read(theForm.QUERY.value);
+	  var subject=(new Nt.Seq()).read(theForm.SUBJECT.value);
 	  
-	  //retrieveUrl="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Get&FORMAT_TYPE=Text&RID=$rid";
-	  return false;  // don't let the page change
+	  var map=subject.mapSequence(query);
+	  console.log(map.best().alignment().sequence());
 	}
-	*/
     </script>
   </head>  
   <body>
@@ -46,7 +34,8 @@
           <option selected>blastn</option>
           <option>blastx</option>
         </select></p>
-        <p><textarea name="QUERY"></textarea></p>
+        <p><textarea name="QUERY">ATGCCCGACTGCA</textarea></p>
+        <p><textarea name="SUBJECT">ATGCCTGACTGCA</textarea></p>
         <p><input type="submit" /></p>
       </form>
     </div>
