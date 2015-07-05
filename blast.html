@@ -11,10 +11,63 @@
     <script>
 	
 	$(document).ready(function(){
-      $("#QUERY").change(function(event){
+      // Listen to the seqFile inputs, to load sequences
+      $(".seqFile").change(function(event){
 	    var querySeq=loadSeq(event);
 	    event.preventDefault();
 	  });
+	  
+	  $("#runANI").click(function(event){
+	    runANI(event);
+	    event.preventDefault();
+	  });
+	  
+	  function smithWaterman(query,subject){
+	    var sMatrix=[
+	      [-1,-1,-1,-1,-1], // -ACGT
+	      [-1,1,-1,-1,-1],
+	      [-1,-1,1,-1,-1],
+	      [-1,-1,-1,1,-1],
+	      [-1,-1,-1,-1,1]
+	    ];
+	    
+        // transform to a string of a number with a prefix gap
+        query="0"+query; subject="0"+subject;
+	    query=query.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
+	    subject=subject.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
+	    
+	    // initialize the matrix's zeroth positions to 0
+	    var matrix=new Array;
+	    for(var i=0;i<query.length;i++){
+	      matrix[i]=new Array;
+	      for(var j=0;j<subject.length;j++){
+	        matrix[i][j]=0;
+	      }
+	    }
+	    
+	    // Calculate scores in the matrix according to gaps and matches.
+	    // The first col/row is zero, so no point in starting at zeroth pos.
+	    for(var i=1;i<query.length;i++){
+	      var queryInt=parseInt(query.substr(i,1));
+	      var lastQueryInt=parseInt(query.substr(i-1,1));
+	      for(var j=1;j<subject.length;j++){
+	        var subjectInt=parseInt(subject.substr(j,1));
+	        var lastSubjectInt=parseInt(subject.substr(j-1,1));
+	        var north=matrix[i-1][j]+ sMatrix[lastQueryInt][subjectInt];
+	        var west=matrix[i][j-1] + sMatrix[queryInt][lastSubjectInt]; // this is not loading right for some reason
+	        var nw=matrix[i-1][j-1] + sMatrix[queryInt][subjectInt];
+	        
+	        //console.log([queryInt,lastQueryInt,subjectInt,lastSubjectInt].join("\t"));
+	        console.log([0,north,west,nw]);
+	        
+	        matrix[i][j]=Math.max([0,north,west,nw]);
+	      }
+	    }
+	    //console.log(matrix);
+	    return false;
+	  }
+	  
+	  smithWaterman("ACACACTA","TAGCACACA");
 	  
 	  amReady();
 	});
@@ -24,27 +77,43 @@
 	  var filename=targetEl.value
 	  var file=targetEl.files[0]
 	  
-	  containerEl=$("#"+targetEl.id+"_container");
+	  containerElId=targetEl.id+"_container";
+	  containerEl=$("#"+containerElId);
 	  
 	  var fr=new FileReader();
 	  fr.onload=function(e){
-	    var fileContent=e.target.result
+	    var fileContent=escape(e.target.result)
+        console.log("Setting "+containerElId+" to the file content");
         containerEl.html(fileContent);
-        console.log(fileContent.substr(0,100) + "...");
+        console.log(fileContent.substr(0,60) + "...");
         amReady();
       }
       fr.readAsText(file)
 	}
 	
+	function runANI(event){
+	  amBusy();
+	  var query=unescape($("#QUERY_container").html());
+	  var subject=unescape($("#SUBJECT_container").html());
+	  
+	  // split the query into 1024 nt chunks
+	  
+	  // run smith-waterman vs the subject
+	  
+	  amReady();
+	}
+	
 	var busyCounter=1; // 0 when not busy; document.ready will decrease this to 0
-	function amReady(){
-	  busyCounter--;
+	function amReady(decrement=1){
+	  busyCounter-=decrement;
+	  $("#ready").text(busyCounter);
 	  if(busyCounter<1){
 	    $("#ready").css('background-color',"#77FF77");
 	  }
 	}
-	function amBusy(){
-	  busyCounter++;
+	function amBusy(increment=1){
+	  busyCounter+=increment;
+	  $("#ready").text(busyCounter);
 	  if(busyCounter >=1 ){
 	    $("#ready").css('background-color',"#FF7777");
 	  }
@@ -57,7 +126,12 @@
       <p>
 	    <input type="file" class="seqFile" name="QUERY" id="QUERY" />
         <div class="hidden" id="QUERY_container"></div>
+        <br />
+	    <input type="file" class="seqFile" name="SUBJECT" id="SUBJECT" />
+        <div class="hidden" id="SUBJECT_container"></div>
       </p>
+      
+      <p><input type="submit" id="runANI" /></p>
     </div>
   </body>
  
