@@ -1,44 +1,63 @@
 <html>
   <head>
     <title>htmlBio BLAST</title>
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
     <script src="lib/jquery-2.1.4.min.js"></script>
+    <!--
     <script src="lib/NtSeq/lib/nt.js"></script>
     <script src="lib/bio-js-LK/src/Bio.js"></script>
+    -->
     <script>
 	
 	$(document).ready(function(){
-      $("#blastForm").submit(function(event){
-	    blast2seq(event);
+      $("#QUERY").change(function(event){
+	    var querySeq=loadSeq(event);
 	    event.preventDefault();
 	  });
+	  
+	  amReady();
 	});
-    function blast2seq(event){
-	  var url ="http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?";
+    function loadSeq(event){
+	  amBusy();
+	  var targetEl=event.currentTarget
+	  var filename=targetEl.value
+	  var file=targetEl.files[0]
 	  
-	  var theForm=event.currentTarget;
+	  containerEl=$("#"+targetEl.id+"_container");
 	  
-	  var query=(new Nt.Seq()).read(theForm.QUERY.value);
-	  var subject=(new Nt.Seq()).read(theForm.SUBJECT.value);
-	  
-	  var map=subject.mapSequence(query);
-	  console.log(map.best().alignment().sequence());
+	  var fr=new FileReader();
+	  fr.onload=function(e){
+	    var fileContent=e.target.result
+        containerEl.html(fileContent);
+        console.log(fileContent.substr(0,100) + "...");
+        amReady();
+      }
+      fr.readAsText(file)
+	}
+	
+	var busyCounter=1; // 0 when not busy; document.ready will decrease this to 0
+	function amReady(){
+	  busyCounter--;
+	  if(busyCounter<1){
+	    $("#ready").css('background-color',"#77FF77");
+	  }
+	}
+	function amBusy(){
+	  busyCounter++;
+	  if(busyCounter >=1 ){
+	    $("#ready").css('background-color',"#FF7777");
+	  }
 	}
     </script>
   </head>  
   <body>
     <div>
-      <form id="blastForm">
-        <input type="hidden" name="CMD" value="Put" />
-        <input type="hidden" name="DATABASE" value="nt" />
-        <input type="hidden" name="FORMAT" value="ASN.1" />
-        <p><select name="PROGRAM">
-          <option selected>blastn</option>
-          <option>blastx</option>
-        </select></p>
-        <p><textarea name="QUERY">ATGCCCGACTGCA</textarea></p>
-        <p><textarea name="SUBJECT">ATGCCTGACTGCA</textarea></p>
-        <p><input type="submit" /></p>
-      </form>
+      <span id="ready" style="height:20px;width:20px;padding:5">&nbsp;</span>
+      <p>
+	    <input type="file" class="seqFile" name="QUERY" id="QUERY" />
+        <div class="hidden" id="QUERY_container"></div>
+      </p>
     </div>
   </body>
  
