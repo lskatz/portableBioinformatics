@@ -8,18 +8,66 @@ function SmithWaterman(query,subject,sMatrix=[]){
     [-1,-1,-1,-1,1]
   ];
   
+  // transform subj/query to a string of a number with a prefix gap
+  query="0"+query; 
+  subject="0"+subject;
+  query=query.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
+  subject=subject.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
+  
   // Add the object properties
   this.query=query;
   this.subject=subject
   this.sMatrix=sMatrix;
+  
+  // Add some blank variables for later
+  this.swPath=[];
+  this.matchStr="";
+}
+
+SmithWaterman.prototype.matchString=function(){
+  if(this.swPath.length==0){
+    console.log("WARNING: need to call SmithWaterman.run() before this.matchString()");
+    return "";
+  }
+  console.log("NOT IMPLEMENTED");
+  return "";
+  
+  
+  // Start looking for the match string. Define it starting with
+  // the first query character.
+  var [lastI,lastJ]=this.swPath[0];
+  var matchString="|"; //this.query.substr(lastI,1);
+  var matchLength=this.swPath.length;
+  for(var k=1;k<matchLength;k++){
+    var [i,j]=this.swPath[k]
+    console.log(this.swPath[k]+" "+this.query.substr(i,1)+" "+this.subject.substr(j,1));
+    continue;
+    
+    // If I is the same, then there is a gap on the query side
+    // If J is the same, then the subject has a gap
+    if( (j!=lastJ && i==lastI) || (j==lastJ && i!=lastI)){
+      matchString+=" ";
+    }  
+    // If both I and J are different, then there is a match
+    else if(i!=lastI && j!=lastJ){
+      matchString+="|"
+    } else {
+      console.log("Internal error");
+      return false;
+    }
+    
+    // Update i, j
+    [lastI,lastJ]=[i,j];
+  }
+  
+  this.matchStr=matchString;
+  console.log("\n"+this.query+"\n"+matchString+"\n"+this.subject+"\n");
+  return matchString;
 }
 
 SmithWaterman.prototype.run=function(){
-  // transform to a string of a number with a prefix gap
-  query="0"+this.query; 
-  subject="0"+this.subject;
-  query=query.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
-  subject=subject.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
+  query=this.query
+  subject=this.subject
   
   // initialize the smith-waterman matrix to 0
   var matrix=new Array;
@@ -92,7 +140,11 @@ SmithWaterman.prototype.run=function(){
   
   // Reverse the match string and path to put it in a 'left to right' order
   swPath=swPath.reverse();
-  //matchString=matchString.split('').reverse().join('');
+  
+  // update the object's properties
+  this.swPath=swPath;
+  this.score=totalScore;
+  this.matrix=matrix;
   
   return [totalScore,swPath];
 }

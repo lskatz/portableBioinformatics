@@ -4,24 +4,27 @@
     <title>htmlBio BLAST</title>
     <link rel="stylesheet" type="text/css" href="css/reset.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <script src="lib/jquery-2.1.4.min.js"></script>
+    <script src="lib/prototype1.7.2"></script>
+    <script src="lib/bio-js-LK/Bio.js"></script>
     <script src="src/smithWaterman.js"></script>
     <!--
     <script src="lib/NtSeq/lib/nt.js"></script>
+    <script src="lib/jquery-2.1.4.min.js"></script>
     <script src="lib/bio-js-LK/src/Bio.js"></script>
     -->
     <script>
 	
-	$(document).ready(function(){
+	document.observe("dom:loaded",function(){
+      /*
       // Listen to the seqFile inputs, to load sequences
-      $(".seqFile").change(function(event){
+      $$(".seqFile").each.observe("change",function(event){
 	    var querySeq=loadSeq(event);
 	    event.preventDefault();
 	  });
-	  
-	  $("#runANI").click(function(event){
+	  */
+	  $("runANI").observe("click",function(event){
 	    runANI(event);
-	    event.preventDefault();
+	    event.stop();
 	  });
 	  
 
@@ -65,16 +68,16 @@
 	var busyCounter=1; // 0 when not busy; document.ready will decrease this to 0
 	function amReady(decrement=1){
 	  busyCounter-=decrement;
-	  $("#ready").text(busyCounter);
+	  $("ready").update(busyCounter);
 	  if(busyCounter<1){
-	    $("#ready").css('background-color',"#77FF77");
+	    $("ready").setStyle({'background-color':"#77FF77"});
 	  }
 	}
 	function amBusy(increment=1){
 	  busyCounter+=increment;
-	  $("#ready").text(busyCounter);
+	  $("ready").update(busyCounter);
 	  if(busyCounter >=1 ){
-	    $("#ready").css('background-color',"#FF7777");
+	    $("ready").setStyle({'background-color':"#FF7777"});
 	  }
 	}
     </script>
