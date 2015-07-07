@@ -1,9 +1,11 @@
 <html>
+  <meta charset="UTF-8">
   <head>
     <title>htmlBio BLAST</title>
     <link rel="stylesheet" type="text/css" href="css/reset.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <script src="lib/jquery-2.1.4.min.js"></script>
+    <script src="src/smithWaterman.js"></script>
     <!--
     <script src="lib/NtSeq/lib/nt.js"></script>
     <script src="lib/bio-js-LK/src/Bio.js"></script>
@@ -22,52 +24,9 @@
 	    event.preventDefault();
 	  });
 	  
-	  function smithWaterman(query,subject){
-	    var sMatrix=[
-	      [-1,-1,-1,-1,-1], // -ACGT
-	      [-1,1,-1,-1,-1],
-	      [-1,-1,1,-1,-1],
-	      [-1,-1,-1,1,-1],
-	      [-1,-1,-1,-1,1]
-	    ];
-	    
-        // transform to a string of a number with a prefix gap
-        query="0"+query; subject="0"+subject;
-	    query=query.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
-	    subject=subject.replace(/A/gi,1).replace(/C/gi,2).replace(/G/gi,3).replace(/T/gi,4);
-	    
-	    // initialize the matrix's zeroth positions to 0
-	    var matrix=new Array;
-	    for(var i=0;i<query.length;i++){
-	      matrix[i]=new Array;
-	      for(var j=0;j<subject.length;j++){
-	        matrix[i][j]=0;
-	      }
-	    }
-	    
-	    // Calculate scores in the matrix according to gaps and matches.
-	    // The first col/row is zero, so no point in starting at zeroth pos.
-	    for(var i=1;i<query.length;i++){
-	      var queryInt=parseInt(query.substr(i,1));
-	      var lastQueryInt=parseInt(query.substr(i-1,1));
-	      for(var j=1;j<subject.length;j++){
-	        var subjectInt=parseInt(subject.substr(j,1));
-	        var lastSubjectInt=parseInt(subject.substr(j-1,1));
-	        var north=matrix[i-1][j]+ sMatrix[lastQueryInt][subjectInt];
-	        var west=matrix[i][j-1] + sMatrix[queryInt][lastSubjectInt]; // this is not loading right for some reason
-	        var nw=matrix[i-1][j-1] + sMatrix[queryInt][subjectInt];
-	        
-	        //console.log([queryInt,lastQueryInt,subjectInt,lastSubjectInt].join("\t"));
-	        console.log([0,north,west,nw]);
-	        
-	        matrix[i][j]=Math.max([0,north,west,nw]);
-	      }
-	    }
-	    //console.log(matrix);
-	    return false;
-	  }
-	  
-	  smithWaterman("ACACACTA","TAGCACACA");
+
+	  var SW=new SmithWaterman("ACACACTA","TAGCACACA");
+	  var [score,swPath]=SW.run();
 	  
 	  amReady();
 	});
