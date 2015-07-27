@@ -1,0 +1,118 @@
+<html>
+  <meta charset="UTF-8">
+  <head>
+    <title>ANI using Smith-Waterman (ANI-SW)</title>
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <script src="lib/prototype1.7.2"></script>
+    <script src="lib/bio-js-LK/src/Bio.js"></script>
+    <script src="lib/bio-js-LK/src/Bio/Tools/SmithWaterman.js"></script>
+    <!--
+    <script src="lib/NtSeq/lib/nt.js"></script>
+    <script src="lib/jquery-2.1.4.min.js"></script>
+    <script src="lib/bio-js-LK/src/Bio.js"></script>
+    -->
+    <script>
+  
+    document.observe("dom:loaded",function(){
+      $$("#aniForm input").each(function(el){
+        if(el.type!="file") return;
+        el.observe("change",function(e){
+          loadSeq(e);
+          e.stop();
+        });
+      });
+
+      $("runANI").observe("click",function(event){
+        runANI(event);
+        event.stop();
+      });
+
+      amReady();
+    });
+
+    var SeqObj={};
+    function loadSeq(event){
+      amBusy();
+      var targetEl=event.currentTarget
+      var filename=targetEl.value
+      var filename=targetEl.files[0]
+      var seqKey=targetEl.id;
+
+      var fr=new FileReader();
+      fr.onload=function(e){
+        // Make a concatenated sequence
+        var sequence="";
+        var SeqIO=new Bio.SeqIO.Fasta({string:e.target.result});
+        while(seq=SeqIO.next_seq()){
+          sequence+=seq.seq();
+        }
+        SeqObj[seqKey]=new Bio.Seq.Primaryseq({seq:sequence,id:filename});
+        amReady();
+      }
+      fr.readAsText(filename)
+    }
+  
+    function runANI(event){
+      amBusy();
+
+      // split the query into 1024 nt chunks
+      var queryArr=SeqObj['QUERY'].seq().match(/.{1,1023}/g);
+      var subjectArr=SeqObj['SUBJECT'].seq().match(/.{1,1023}/g);
+      
+      // run smith-waterman vs the subject
+      for(var i=0;i<queryArr.length;i++){
+        var QueryObj=new Bio.Seq.Primaryseq({id:"query"+i,seq:queryArr[i]});
+        var bestPercentIdentity=-1;
+        for(var j=0;j<subjectArr.length;j++){
+          var SubjectObj=new Bio.Seq.Primaryseq({id:"query"+i,seq:subjectArr[j]});
+          var SW=new Bio.Tools.SmithWaterman({query:QueryObj, subject:SubjectObj});
+          SW.run();
+          if(SW.percentIdentity > bestPercentIdentity) bestPercentIdentity=SW.percentIdentity;
+        }
+        console.log(SW.bestPercentIdentity);
+      }
+      
+      amReady();
+    }
+    
+    var busyCounter=1; // 0 when not busy; document.ready will decrease this to 0
+    function amReady(decrement=1){
+      busyCounter-=decrement;
+      $("ready").update(busyCounter);
+      if(busyCounter<1){
+        $("ready").setStyle({'background-color':"#77FF77"});
+      }
+    }
+    function amBusy(increment=1){
+      busyCounter+=increment;
+      $("ready").update(busyCounter);
+      if(busyCounter >=1 ){
+        $("ready").setStyle({'background-color':"#FF7777"});
+      }
+    }
+
+    </script>
+  </head>  
+  <body>
+    <div>
+      <div id="ready" style="height:20px;width:20px;padding:5">&nbsp;</div>
+      <h1>ANI using Smith-Waterman (ANI-SW)</h1>
+      <p>
+      <form id="aniForm">
+        <input type="file" class="seqFile" name="QUERY" id="QUERY" />
+        <div class="hidden" id="QUERY_container"></div>
+        <br />
+
+        <input type="file" class="seqFile" name="SUBJECT" id="SUBJECT" />
+        <div class="hidden" id="SUBJECT_container"></div>
+        <br />
+        
+        <input type="submit" id="runANI" value="Run ANI"  />
+      </form>
+      </p>
+      
+    </div>
+  </body>
+ 
+</html>
