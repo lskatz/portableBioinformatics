@@ -57,8 +57,8 @@
       amBusy();
 
       // split the query into 1024 nt chunks
-      var queryArr=SeqObj['QUERY'].seq().match(/.{1,1023}/g);
-      var subjectArr=SeqObj['SUBJECT'].seq().match(/.{1,1023}/g);
+      var queryArr=SeqObj['QUERY'].seq().match(/.{1,1024}/g);
+      var subjectArr=SeqObj['SUBJECT'].seq().match(/.{1,1024}/g);
       
       // run smith-waterman vs the subject
       for(var i=0;i<queryArr.length;i++){
